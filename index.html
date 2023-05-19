@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>clientside-firebase-counter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Emoji&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      html{
+        font-size:20px;
+        font-family: "DotGothic16", sans-serif;
+        font-weight: 400;
+      }
+      h1{
+        font-size:2em;
+      }
+      p{
+        font-size:1em;
+      }
+      .u-color-red{
+        color:#f00;
+      }
+      #error-log{
+        color:#f00;
+      }
+
+    </style>
+  </head>
+  <body>
+    <h1>clientside-firebase-counter</h1>
+    <p>`/counters/mycounter/count`を操作します</p>
+    <p></p>
+    <p>カウンターの数値は<span class="u-color-red" id="counter01">loading...</span>です。</p>
+    <p>2つめのカウンターの数値も<span class="u-color-red" id="counter02">loading...</span>です。</p>
+    <p>セキュリティルールで`+1`しか許可していないので、他はエラーになります。</p>
+    <p><button id="plus-one">+1</button><button id="plus-two">+2</button><button id="minus-one">-1</button></p>
+    <pre id="error-log"></pre>
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+
+      import {getFirestore,terminate,doc,updateDoc,increment,onSnapshot,getDoc} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"
+
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+    
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyCiNiEqStBWKoUJM1FVXjF9BMIq5w7iltU",
+        authDomain: "clientside-firebase-counter.firebaseapp.com",
+        projectId: "clientside-firebase-counter",
+        storageBucket: "clientside-firebase-counter.appspot.com",
+        messagingSenderId: "519284773774",
+        appId: "1:519284773774:web:4f460ac4fa4d53eb5b4adf",
+        measurementId: "G-PJF5846ZY8"
+      };
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const counterId="mycounter";
+
+
+      async function updateCountAsync(valueOrOperation){
+        const counterDoc=doc(db,"counters",counterId);
+        await updateDoc(counterDoc,{
+          count:valueOrOperation,
+        });
+      }
+
+      async function incrementCountAsync(){
+        await updateCountAsync(increment(1));
+      }
+      function updateCountDomElements(count){
+        document.querySelector("#counter01").textContent=count;
+        document.querySelector("#counter02").textContent=count;
+      }
+      function updateErrorLogDomElement(errorText){
+        document.querySelector("#error-log").textContent=errorText;
+        
+      }
+
+      async function getCountAsync(){
+        const counterDoc=doc(db,"counters",counterId);
+        const counterSnapshot=await getDoc(counterDoc);
+        if(!counterSnapshot.exists()){
+          throw new Error("counterSnapshot is not exists")
+        }
+        return counterSnapshot.data().count;
+
+      }
+      function listenCounter(cb){
+        const counterDoc=doc(db,"counters",counterId);
+        const unsubscribe=onSnapshot(
+          counterDoc,
+          (counterSnapshot)=>{
+            console.log(counterSnapshot.data());
+
+            if(counterSnapshot.exists()){
+              const counter=counterSnapshot.data();
+              cb(counter);
+            }
+          }
+        );
+      }
+
+
+      try{
+        await listenCounter((counter)=>{
+          console.log(counter);
+          updateCountDomElements(counter.count);
+
+        });
+
+        await incrementCountAsync();
+        // const count=await getCountAsync();
+        // updateCountDomElements(count);
+
+
+      }catch(error){
+        updateErrorLogDomElement(error.message);
+        console.error(error);
+      }
+
+      document.querySelector("#plus-one").addEventListener("click",async ()=>{
+        try{
+          await updateCountAsync(increment(1));
+        }catch(error){
+          updateErrorLogDomElement(error.message);
+          console.error(error);
+        }
+
+      });
+      document.querySelector("#plus-two").addEventListener("click",async ()=>{
+        try{
+          await updateCountAsync(increment(2));
+        }catch(error){
+          updateErrorLogDomElement(error.message);
+          console.error(error);
+        }
+      });
+      document.querySelector("#minus-one").addEventListener("click",async ()=>{
+        try{
+          await updateCountAsync(increment(-1));
+        }catch(error){
+          updateErrorLogDomElement(error.message);
+          console.error(error);
+        }
+      });
+
+      
+    </script>
+  </body>
+</html>
