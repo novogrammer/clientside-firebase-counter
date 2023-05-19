@@ -96,7 +96,7 @@
         return counterSnapshot.data().count;
 
       }
-      function listenCounter(cb){
+      function listenCounter(callback){
         const counterDoc=doc(db,"counters",counterId);
         const unsubscribe=onSnapshot(
           counterDoc,
@@ -105,14 +105,23 @@
 
             if(counterSnapshot.exists()){
               const counter=counterSnapshot.data();
-              cb(counter);
+              callback(counter);
             }
           }
         );
       }
+      async function doDatabaseActionAsync(callbackAsync){
+        updateErrorLogDomElement("");
+        try{
+          await callbackAsync();
+        }catch(error){
+          updateErrorLogDomElement(error.message);
+          console.error(error);
+        }
 
+      }
 
-      try{
+      await doDatabaseActionAsync(async()=>{
         await listenCounter((counter)=>{
           console.log(counter);
           updateCountDomElements(counter.count);
@@ -123,39 +132,24 @@
         // const count=await getCountAsync();
         // updateCountDomElements(count);
 
+      })
 
-      }catch(error){
-        updateErrorLogDomElement(error.message);
-        console.error(error);
-      }
 
       document.querySelector("#plus-one").addEventListener("click",async ()=>{
-        updateErrorLogDomElement("");
-        try{
+        await doDatabaseActionAsync(async()=>{
           await updateCountAsync(increment(1));
-        }catch(error){
-          updateErrorLogDomElement(error.message);
-          console.error(error);
-        }
+        });
 
       });
       document.querySelector("#plus-two").addEventListener("click",async ()=>{
-        updateErrorLogDomElement("");
-        try{
+        await doDatabaseActionAsync(async()=>{
           await updateCountAsync(increment(2));
-        }catch(error){
-          updateErrorLogDomElement(error.message);
-          console.error(error);
-        }
+        });
       });
       document.querySelector("#minus-one").addEventListener("click",async ()=>{
-        updateErrorLogDomElement("");
-        try{
+        await doDatabaseActionAsync(async()=>{
           await updateCountAsync(increment(-1));
-        }catch(error){
-          updateErrorLogDomElement(error.message);
-          console.error(error);
-        }
+        });
       });
 
       
