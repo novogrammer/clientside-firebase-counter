@@ -4,6 +4,7 @@
 クライアントサイドでfirebaseのカウンターを実現する
 firestoreを使う
 
+demo https://novogrammer.github.io/clientside-firebase-counter/
 
 # セキュリティルール
 以下のセキュリティルールを設定しておく、
