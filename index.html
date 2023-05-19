@@ -130,6 +130,7 @@
       }
 
       document.querySelector("#plus-one").addEventListener("click",async ()=>{
+        updateErrorLogDomElement("");
         try{
           await updateCountAsync(increment(1));
         }catch(error){
@@ -139,6 +140,7 @@
 
       });
       document.querySelector("#plus-two").addEventListener("click",async ()=>{
+        updateErrorLogDomElement("");
         try{
           await updateCountAsync(increment(2));
         }catch(error){
@@ -147,6 +149,7 @@
         }
       });
       document.querySelector("#minus-one").addEventListener("click",async ()=>{
+        updateErrorLogDomElement("");
         try{
           await updateCountAsync(increment(-1));
         }catch(error){
